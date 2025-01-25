@@ -5,8 +5,8 @@ those that require math into some Vector data-structure with a supported
 vector/vector-math library.
 """
 
-import random
 import os
+import random
 
 
 def tuple_add(a, b):
@@ -19,28 +19,28 @@ def tuple_sub(a, b):
 
 def plural(n, s1):
     if n > 1 or n == 0:
-        return s1 + 's'
+        return s1 + "s"
     else:
         return s1
 
 
 def split_every_nchars(instr, n):
-    return [instr[i:i+n] for i in xrange(0, len(instr), n)]
+    return [instr[i : i + n] for i in range(0, len(instr), n)]
 
 
 def bits(char, nbits):
-    b = ''
-    for i in reversed(xrange(nbits)):
+    b = ""
+    for i in reversed(range(nbits)):
         b += str((char >> i) & 1)
     return b
 
 
 def get_file_name(path):
-    return os.path.basename(path).split('.')[0]
+    return os.path.basename(path).split(".")[0]
 
 
 def get_item(blueprint_path):
-    return blueprint_path.split('/')[-1].split('.')[-1]
+    return blueprint_path.split("/")[-1].split(".")[-1]
 
 
 def list_set(l, index, value):
@@ -48,7 +48,7 @@ def list_set(l, index, value):
     try:
         l[index] = value
     except IndexError:
-        for _ in xrange(index - len(l)+1):
+        for _ in range(index - len(l) + 1):
             l.append(None)
         l[index] = value
 

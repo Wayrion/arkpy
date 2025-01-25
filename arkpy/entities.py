@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Trophy(Enum):
     Alpha_Rex_Trophy = "BlueprintGeneratedClass /Game/PrimalEarth/CoreBlueprints/Items/Trophies/PrimalItemTrophy_AlphaRex.PrimalItemTrophy_AlphaRex"
     Broodmother_Trophy = "BlueprintGeneratedClass /Game/PrimalEarth/CoreBlueprints/Items/Trophies/PrimalItemTrophy_Broodmother.PrimalItemTrophy_Broodmother"
@@ -664,6 +665,3 @@ class Structure(Enum):
     Wooden_Tree_Platform = "BlueprintGeneratedClass /Game/PrimalEarth/CoreBlueprints/Items/Structures/Wooden/PrimalItemStructure_TreePlatform_Wood.PrimalItemStructure_TreePlatform_Wood"
     Metal_Tree_Platform = "BlueprintGeneratedClass /Game/PrimalEarth/CoreBlueprints/Items/Structures/Wooden/PrimalItemStructure_TreePlatform_Metal.PrimalItemStructure_TreePlatform_Metal"
     Tree_Sap_Tap = "BlueprintGeneratedClass /Game/PrimalEarth/CoreBlueprints/Items/Structures/Pipes/PrimalItemStructure_TreeTap.PrimalItemStructure_TreeTap"
-
-
-

@@ -9,12 +9,12 @@ and the value, which is usually the size of the structure (4 bytes),
 the index (another 4 bytes).
 """
 
-import random
-import utils
-import json
 import itertools
+import json
+import random
 import struct
 
+import utils
 from binary import BinaryStream
 
 # debug = True
@@ -35,21 +35,20 @@ def load_struct(stream):
 def load_property(stream):
     name, prop_type = stream.read_pair()
     # print (name, prop_type)
-    if prop_type == 'StructProperty':
+    if prop_type == "StructProperty":
         return (name, prop_type, load_struct(stream))
     else:
         return (name, prop_type, PROPERTIES[prop_type](stream=stream))
 
 
-class BaseProperty():
-
+class BaseProperty:
     def __init__(self, value=None):
         # print 'Base Property init'
         self.value = value
         self.index = 0
         self.size = 0
         self.wrapped_size = 0
-        self.var_name = ''
+        self.var_name = ""
         self.included = True
         self.changed = False
 
@@ -81,21 +80,20 @@ class BaseProperty():
             return 0
 
     def __repr__(self):
-        return '<%s> %s' % (self.__class__.__name__, self.value)
+        return "<%s> %s" % (self.__class__.__name__, self.value)
 
 
 class BaseStruct:
-
     def __init__(self, stream=None):
         self.data = {}
         self.size = 0
         self.wrapped_size = 0
         self.index = 0
-        self.var_name = ''
+        self.var_name = ""
         self.included = True
 
         if stream is not None:
-            while stream.peek(stream.readNullTerminatedString) != 'None':
+            while stream.peek(stream.readNullTerminatedString) != "None":
                 self.load_and_set_next_property(stream)
             stream.readNullTerminatedString()
 
@@ -104,7 +102,7 @@ class BaseStruct:
 
     def set(self, key, value):
         if isinstance(value, list):
-            for i in xrange(len(value)):
+            for i in range(len(value)):
                 value[i].var_name = key
         else:
             value.var_name = key
@@ -131,16 +129,16 @@ class BaseStruct:
                 utils.list_set(self.data[name], prev_value.index, prev_value)
                 utils.list_set(self.data[name], value.index, value)
             else:
-                if field.__class__.__name__ == 'ArrayProperty':
+                if field.__class__.__name__ == "ArrayProperty":
                     # TODO: Would like to merge arrays of structs with default
                     # values so that the proper structs will be used
                     pass
                 self.data[name] = value
         if debug:
-            print '----------------------------------------'
-            print "Struct Type: %s" % self.__class__.__name__
-            print self.data
-            print '----------------------------------------'
+            print("----------------------------------------")
+            print("Struct Type: %s" % self.__class__.__name__)
+            print(self.data)
+            print("----------------------------------------")
 
     def _calc_inner_size(self):
         size = 0
@@ -180,7 +178,7 @@ class BaseStruct:
 
     def _write_shared_struct_info(self, stream):
         stream.writeNullTerminatedString(self.var_name)
-        stream.writeNullTerminatedString('StructProperty')
+        stream.writeNullTerminatedString("StructProperty")
         stream.writeInt32(self.size)
         stream.writeInt32(self.index)
         stream.writeNullTerminatedString(self.__class__.__name__)
@@ -198,15 +196,14 @@ class BaseStruct:
                             v._write_to_stream(stream)
                 else:
                     value._write_to_stream(stream)
-            stream.writeNullTerminatedString('None')
+            stream.writeNullTerminatedString("None")
 
     def _exclude(self):
         pass
 
 
 class StrProperty(BaseProperty):
-
-    def __init__(self, value='', stream=None):
+    def __init__(self, value="", stream=None):
         BaseProperty.__init__(self)
         self.set(value=value)
         self.size = 5 + len(value)
@@ -243,8 +240,7 @@ class StrProperty(BaseProperty):
 
 
 class ArrayProperty(BaseProperty):
-
-    def __init__(self, child_type='IntProperty', stream=None):
+    def __init__(self, child_type="IntProperty", stream=None):
         BaseProperty.__init__(self)
         self.value = []
         # An ArrayProperty's size is not the length of items
@@ -258,32 +254,32 @@ class ArrayProperty(BaseProperty):
 
     def _set_from_stream(self, stream):
         conversion_table = {
-            'ByteProperty': stream.readChar,
-            'IntProperty': stream.readInt32,
-            'UIntProperty': stream.readUInt32,
-            'UInt32Property': stream.readUInt32,
-            'Int16Property': stream.readInt16,
-            'UInt16Property': stream.readUInt16,
-            'Int64Property': stream.readInt64,
-            'UInt64Property': stream.readUInt64,
-            'FloatProperty': stream.readFloat,
-            'DoubleProperty': stream.readDouble,
-            'StrProperty': stream.readNullTerminatedString,
-            'ObjectProperty': stream.readNullTerminatedString,
+            "ByteProperty": stream.readChar,
+            "IntProperty": stream.readInt32,
+            "UIntProperty": stream.readUInt32,
+            "UInt32Property": stream.readUInt32,
+            "Int16Property": stream.readInt16,
+            "UInt16Property": stream.readUInt16,
+            "Int64Property": stream.readInt64,
+            "UInt64Property": stream.readUInt64,
+            "FloatProperty": stream.readFloat,
+            "DoubleProperty": stream.readDouble,
+            "StrProperty": stream.readNullTerminatedString,
+            "ObjectProperty": stream.readNullTerminatedString,
         }
         self.size = stream.readInt32()
         self.index = stream.readInt32()
         self.child_type = stream.readNullTerminatedString()
         self.length = stream.readInt32()
-        for i in xrange(self.length):
-            if self.child_type == 'StructProperty':
+        for i in range(self.length):
+            if self.child_type == "StructProperty":
                 value = BaseStruct(stream)
                 self.value.append(value)
             else:
-                if self.child_type == 'ObjectProperty':
+                if self.child_type == "ObjectProperty":
                     stream.readInt32()
                     value = stream.readNullTerminatedString()
-                elif self.child_type == 'StrProperty':
+                elif self.child_type == "StrProperty":
                     # Special Case for StrProperty unicode string hack
                     # TODO: Refactor array child property reading to the
                     # property primitives, and refactor out property's reading
@@ -293,7 +289,7 @@ class ArrayProperty(BaseProperty):
                     try:
                         value = stream.readNullTerminatedString()
                     except struct.error:
-                        print 'Exception in array string handling'
+                        print("Exception in array string handling")
                         stream.base_stream.seek(pos, 0)
                         value = stream.readUnicodeString()
                 else:
@@ -306,7 +302,7 @@ class ArrayProperty(BaseProperty):
         return "[]<%s>(%s)" % (self.child_type, self.length)
 
     def _calc_inner_size(self):
-        print 'Calculating ArrayProperty Inner Size'
+        print("Calculating ArrayProperty Inner Size")
         size = 4
         for val in self.value:
             size = size + val._calc_inner_size()
@@ -335,7 +331,7 @@ class ArrayProperty(BaseProperty):
     def _write_to_stream(self, stream):
         if len(self.value) > 0:
             stream.writeNullTerminatedString(self.var_name)
-            stream.writeNullTerminatedString('ArrayProperty')
+            stream.writeNullTerminatedString("ArrayProperty")
             stream.writeInt32(self.size)
             stream.writeInt32(self.index)
             stream.writeNullTerminatedString(self.child_type)
@@ -345,7 +341,6 @@ class ArrayProperty(BaseProperty):
 
 
 class ByteProperty(BaseProperty):
-
     def __init__(self, value=0, stream=None, index=0):
         BaseProperty.__init__(self)
         self.value = value
@@ -375,13 +370,12 @@ class ByteProperty(BaseProperty):
         if self.included:
             if array is False:
                 self._write_shared_prop_info(stream)
-                stream.writeNullTerminatedString('None')
+                stream.writeNullTerminatedString("None")
             stream.writeChar(self.value)
 
 
 class ObjectProperty(BaseProperty):
-
-    def __init__(self, value='', stream=None, index=0):
+    def __init__(self, value="", stream=None, index=0):
         BaseProperty.__init__(self)
         self.index = index
         self.value = value
@@ -424,7 +418,6 @@ class ObjectProperty(BaseProperty):
 
 
 class FloatProperty(BaseProperty):
-
     def __init__(self, value=0.0, stream=None, index=0):
         BaseProperty.__init__(self)
         self.set(value=value)
@@ -446,7 +439,6 @@ class FloatProperty(BaseProperty):
 
 
 class DoubleProperty(BaseProperty):
-
     def __init__(self, value=0.0, stream=None):
         BaseProperty.__init__(self)
         self.set(value=value)
@@ -467,7 +459,6 @@ class DoubleProperty(BaseProperty):
 
 
 class Int16Property(BaseProperty):
-
     def __init__(self, value=0, stream=None):
         BaseProperty.__init__(self)
         self.set(value=value)
@@ -488,7 +479,6 @@ class Int16Property(BaseProperty):
 
 
 class UInt16Property(BaseProperty):
-
     def __init__(self, value=0, stream=None):
         BaseProperty.__init__(self)
         self.set(value=value)
@@ -509,7 +499,6 @@ class UInt16Property(BaseProperty):
 
 
 class IntProperty(BaseProperty):
-
     def __init__(self, value=0, stream=None):
         BaseProperty.__init__(self)
         self.set(value=value)
@@ -530,7 +519,6 @@ class IntProperty(BaseProperty):
 
 
 class UInt32Property(BaseProperty):
-
     def __init__(self, value=0, stream=None):
         BaseProperty.__init__(self)
         self.set(value=value)
@@ -551,7 +539,6 @@ class UInt32Property(BaseProperty):
 
 
 class Int64Property(BaseProperty):
-
     def __init__(self, value=0, stream=None):
         BaseProperty.__init__(self)
         self.set(value=value)
@@ -572,7 +559,6 @@ class Int64Property(BaseProperty):
 
 
 class UInt64Property(BaseProperty):
-
     def __init__(self, value=0, stream=None):
         BaseProperty.__init__(self, value=value)
         self.set(value=value)
@@ -593,7 +579,6 @@ class UInt64Property(BaseProperty):
 
 
 class BoolProperty(BaseProperty):
-
     def __init__(self, value=True, stream=None):
         BaseProperty.__init__(self)
         self.value = value
@@ -630,74 +615,73 @@ class BoolProperty(BaseProperty):
 
 # ArkProfile Structures ----------------------------------
 
-class PrimalPlayerDataStruct(BaseStruct):
 
+class PrimalPlayerDataStruct(BaseStruct):
     def __init__(self, size=0, stream=None):
         BaseStruct.__init__(self)
         self.size = size
-        self.var_name = 'MyData'
+        self.var_name = "MyData"
 
         # Default Values
         random_id = utils._gen_player_id()
-        self.set('PlayerDataID', UInt64Property(value=random_id))
-        self.set('UniqueID', UniqueNetIdRepl())
-        self.set('SavedNetworkAddress', StrProperty())
-        self.set('PlayerName', StrProperty())
-        self.set('bFirstSpawned', BoolProperty())
-        self.set('bIsSpectator', BoolProperty())
-        cs = 'MyPlayerCharacterConfig'
+        self.set("PlayerDataID", UInt64Property(value=random_id))
+        self.set("UniqueID", UniqueNetIdRepl())
+        self.set("SavedNetworkAddress", StrProperty())
+        self.set("PlayerName", StrProperty())
+        self.set("bFirstSpawned", BoolProperty())
+        self.set("bIsSpectator", BoolProperty())
+        cs = "MyPlayerCharacterConfig"
         self.set(cs, PrimalPlayerCharacterConfigStruct())
-        ss = 'MyPersistentCharacterStats'
+        ss = "MyPersistentCharacterStats"
         self.set(ss, PrimalPersistentCharacterStatsStruct())
-        self.set('TribeID', IntProperty())
-        self.set('PlayerDataVersion', IntProperty(value=1))
-        self.set('AppIDSet', ArrayProperty(child_type='IntProperty'))
-        self.data['AppIDSet'].value.append(IntProperty(value=375350))
+        self.set("TribeID", IntProperty())
+        self.set("PlayerDataVersion", IntProperty(value=1))
+        self.set("AppIDSet", ArrayProperty(child_type="IntProperty"))
+        self.data["AppIDSet"].value.append(IntProperty(value=375350))
 
         if stream is not None:
-            while stream.peek(stream.readNullTerminatedString) != 'None':
+            while stream.peek(stream.readNullTerminatedString) != "None":
                 self.load_and_set_next_property(stream)
             stream.readNullTerminatedString()
 
     def _exclude(self):
-        if self.data['SavedNetworkAddress'].value == '':
-            self.data['SavedNetworkAddress'].included = False
-        if self.data['TribeID'].value == 0:
-            self.data['TribeID'].included = False
-        self.data['MyPlayerCharacterConfig']._exclude()
-        self.data['MyPersistentCharacterStats']._exclude()
+        if self.data["SavedNetworkAddress"].value == "":
+            self.data["SavedNetworkAddress"].included = False
+        if self.data["TribeID"].value == 0:
+            self.data["TribeID"].included = False
+        self.data["MyPlayerCharacterConfig"]._exclude()
+        self.data["MyPersistentCharacterStats"]._exclude()
 
     def _write_to_stream(self, stream):
-        print 'calculating sizes'
+        print("calculating sizes")
         self._exclude()
         self._calc_size()
-        print 'writing player data struct'
+        print("writing player data struct")
         self._write_shared_struct_info(stream)
-        self.data['PlayerDataID']._write_to_stream(stream)
-        self.data['UniqueID']._write_to_stream(stream)
-        self.data['SavedNetworkAddress']._write_to_stream(stream)
-        self.data['PlayerName']._write_to_stream(stream)
-        self.data['bFirstSpawned']._write_to_stream(stream)
-        self.data['bIsSpectator']._write_to_stream(stream)
-        self.data['MyPlayerCharacterConfig']._write_to_stream(stream)
-        self.data['MyPersistentCharacterStats']._write_to_stream(stream)
-        self.data['TribeID']._write_to_stream(stream)
-        self.data['AppIDSet']._write_to_stream(stream)
-        self.data['PlayerDataVersion']._write_to_stream(stream)
-        stream.writeNullTerminatedString('None')
+        self.data["PlayerDataID"]._write_to_stream(stream)
+        self.data["UniqueID"]._write_to_stream(stream)
+        self.data["SavedNetworkAddress"]._write_to_stream(stream)
+        self.data["PlayerName"]._write_to_stream(stream)
+        self.data["bFirstSpawned"]._write_to_stream(stream)
+        self.data["bIsSpectator"]._write_to_stream(stream)
+        self.data["MyPlayerCharacterConfig"]._write_to_stream(stream)
+        self.data["MyPersistentCharacterStats"]._write_to_stream(stream)
+        self.data["TribeID"]._write_to_stream(stream)
+        self.data["AppIDSet"]._write_to_stream(stream)
+        self.data["PlayerDataVersion"]._write_to_stream(stream)
+        stream.writeNullTerminatedString("None")
 
 
 class UniqueNetIdRepl(BaseStruct):
-
     def __init__(self, stream=None):
         BaseStruct.__init__(self)
         self.size = 26
-        self.value = '00000000000000000'
+        self.value = "00000000000000000"
         if stream is not None:
             stream.readInt32()
             self.value = stream.readNullTerminatedString()
 
-    def set(self, value=''):
+    def set(self, value=""):
         self.value = str(value)
 
     def _write_to_stream(self, stream):
@@ -706,7 +690,7 @@ class UniqueNetIdRepl(BaseStruct):
         stream.writeNullTerminatedString(self.value)
 
     def __repr__(self):
-        return str(self.__class__.__name__) + ': ' + str(self.value)
+        return str(self.__class__.__name__) + ": " + str(self.value)
 
     def _calc_size(self):
         self.size = len(self.value) + 9
@@ -716,7 +700,6 @@ class UniqueNetIdRepl(BaseStruct):
 
 
 class PrimalPlayerCharacterConfigStruct(BaseStruct):
-
     def __init__(self, stream=None):
         BaseStruct.__init__(self)
         # Default Values
@@ -724,43 +707,42 @@ class PrimalPlayerCharacterConfigStruct(BaseStruct):
         # because EVERY other solution I tried, including closures
         # and seperate method calls resulted in the same scope
         # and assigning the same index value to every single list item
-        colors = [LinearColor(index=i) for i in xrange(3)]
-        self.set('BodyColors', colors)
+        colors = [LinearColor(index=i) for i in range(3)]
+        self.set("BodyColors", colors)
         # self.set('BodyColors', [])
-        self.set('PlayerCharacterName', StrProperty())
-        bones = [FloatProperty(value=0.5, index=j) for j in xrange(22)]
-        self.set('RawBoneModifiers', bones)
+        self.set("PlayerCharacterName", StrProperty())
+        bones = [FloatProperty(value=0.5, index=j) for j in range(22)]
+        self.set("RawBoneModifiers", bones)
         # self.set('RawBoneModifiers', [])
-        self.set('bIsFemale', BoolProperty(value=False))
-        self.set('PlayerSpawnRegionIndex', IntProperty())
+        self.set("bIsFemale", BoolProperty(value=False))
+        self.set("PlayerSpawnRegionIndex", IntProperty())
 
         if stream is not None:
             # Structs with multiple values end with None
-            while stream.peek(stream.readNullTerminatedString) != 'None':
+            while stream.peek(stream.readNullTerminatedString) != "None":
                 self.load_and_set_next_property(stream)
             # Remember to read the None to advance position past it when done
             stream.readNullTerminatedString()
 
     def _exclude(self):
         # colors
-        for bone in self.data['RawBoneModifiers']:
+        for bone in self.data["RawBoneModifiers"]:
             if bone.value == 0.5 and not bone.changed:
                 bone.included = False
 
     def _write_to_stream(self, stream):
         self._write_shared_struct_info(stream)
-        for color in self.data['BodyColors']:
+        for color in self.data["BodyColors"]:
             color._write_to_stream(stream)
-        self.data['PlayerCharacterName']._write_to_stream(stream)
-        for bone in self.data['RawBoneModifiers']:
+        self.data["PlayerCharacterName"]._write_to_stream(stream)
+        for bone in self.data["RawBoneModifiers"]:
             bone._write_to_stream(stream)
-        self.data['bIsFemale']._write_to_stream(stream)
-        self.data['PlayerSpawnRegionIndex']._write_to_stream(stream)
-        stream.writeNullTerminatedString('None')
+        self.data["bIsFemale"]._write_to_stream(stream)
+        self.data["PlayerSpawnRegionIndex"]._write_to_stream(stream)
+        stream.writeNullTerminatedString("None")
 
 
 class LinearColor(BaseStruct):
-
     def __init__(self, r=0.0, g=0.0, b=0.0, a=1.0, stream=None, index=0):
         BaseStruct.__init__(self)
         self.size = 16
@@ -800,150 +782,146 @@ class LinearColor(BaseStruct):
 
 
 class PrimalPersistentCharacterStatsStruct(BaseStruct):
-
     def __init__(self, stream=None):
         BaseStruct.__init__(self)
 
         # Default Values
-        csc_s = 'CharacterStatusComponent_'
-        levels_string = csc_s + 'ExtraCharacterLevel'
-        exp_string = csc_s + 'ExperiencePoints'
-        level_up_string = csc_s + 'NumberOfLevelUpPointsApplied'
+        csc_s = "CharacterStatusComponent_"
+        levels_string = csc_s + "ExtraCharacterLevel"
+        exp_string = csc_s + "ExperiencePoints"
+        level_up_string = csc_s + "NumberOfLevelUpPointsApplied"
 
         self.set(levels_string, UInt16Property())
         self.set(exp_string, FloatProperty())
-        self.set('PlayerState_TotalEngramPoints', IntProperty())
-        learned_engrams = ArrayProperty(child_type='ObjectProperty')
-        self.set('PlayerState_EngramBlueprints', learned_engrams)
-        lvlups = [ByteProperty(index=i) for i in xrange(12)]
+        self.set("PlayerState_TotalEngramPoints", IntProperty())
+        learned_engrams = ArrayProperty(child_type="ObjectProperty")
+        self.set("PlayerState_EngramBlueprints", learned_engrams)
+        lvlups = [ByteProperty(index=i) for i in range(12)]
         self.set(level_up_string, lvlups)
-        default_slots = [ObjectProperty(index=i) for i in xrange(10)]
-        self.set('PlayerState_DefaultItemSlotClasses', default_slots)
+        default_slots = [ObjectProperty(index=i) for i in range(10)]
+        self.set("PlayerState_DefaultItemSlotClasses", default_slots)
 
         if stream is not None:
-            while stream.peek(stream.readNullTerminatedString) != 'None':
+            while stream.peek(stream.readNullTerminatedString) != "None":
                 self.load_and_set_next_property(stream)
             stream.readNullTerminatedString()
 
     def _exclude(self):
         # Experience Points
-        exp_string = 'CharacterStatusComponent_ExperiencePoints'
+        exp_string = "CharacterStatusComponent_ExperiencePoints"
         if self.data[exp_string].value == 0.0:
             self.data[exp_string].included = False
         # Levels
-        levels_string = 'CharacterStatusComponent_ExtraCharacterLevel'
+        levels_string = "CharacterStatusComponent_ExtraCharacterLevel"
         if self.data[levels_string].value == 0:
             self.data[levels_string].included = False
         # Engram Points
-        if self.data['PlayerState_TotalEngramPoints'].value == 0:
-            self.data['PlayerState_TotalEngramPoints'].included = False
+        if self.data["PlayerState_TotalEngramPoints"].value == 0:
+            self.data["PlayerState_TotalEngramPoints"].included = False
         # Stat Points
-        l = self.data['CharacterStatusComponent_NumberOfLevelUpPointsApplied']
+        l = self.data["CharacterStatusComponent_NumberOfLevelUpPointsApplied"]
         for lvlup in l:
             if lvlup.value == 0:
                 lvlup.included = False
         # Default Slots
-        for slot in self.data['PlayerState_DefaultItemSlotClasses']:
-            if slot.value == '':
+        for slot in self.data["PlayerState_DefaultItemSlotClasses"]:
+            if slot.value == "":
                 slot.included = False
 
     def _write_to_stream(self, stream):
         self._write_shared_struct_info(stream)
-        csc_s = 'CharacterStatusComponent_'
-        levels_string = csc_s + 'ExtraCharacterLevel'
-        exp_string = csc_s + 'ExperiencePoints'
-        level_up_string = csc_s + 'NumberOfLevelUpPointsApplied'
+        csc_s = "CharacterStatusComponent_"
+        levels_string = csc_s + "ExtraCharacterLevel"
+        exp_string = csc_s + "ExperiencePoints"
+        level_up_string = csc_s + "NumberOfLevelUpPointsApplied"
         self.data[levels_string]._write_to_stream(stream)
         self.data[exp_string]._write_to_stream(stream)
-        self.data['PlayerState_TotalEngramPoints']._write_to_stream(stream)
-        self.data['PlayerState_EngramBlueprints']._write_to_stream(stream)
+        self.data["PlayerState_TotalEngramPoints"]._write_to_stream(stream)
+        self.data["PlayerState_EngramBlueprints"]._write_to_stream(stream)
         for lvlup in self.data[level_up_string]:
             lvlup._write_to_stream(stream)
-        for slot in self.data['PlayerState_DefaultItemSlotClasses']:
+        for slot in self.data["PlayerState_DefaultItemSlotClasses"]:
             slot._write_to_stream(stream)
-        stream.writeNullTerminatedString('None')
+        stream.writeNullTerminatedString("None")
 
 
 # ArkTribe Structures
 
-class TribeData(BaseStruct):
 
+class TribeData(BaseStruct):
     def __init__(self, stream=None):
         BaseStruct.__init__(self)
-        self.var_name = 'TribeData'
+        self.var_name = "TribeData"
 
         random_id = utils._gen_tribe_id()
-        self.set('TribeName', StrProperty())
-        self.set('OwnerPlayerDataID', UInt32Property())
-        self.set('TribeID', IntProperty(value=random_id))
-        self.set('MembersPlayerName', ArrayProperty(child_type='StrProperty'))
-        self.set('MembersPlayerDataID', ArrayProperty(
-            child_type='UInt32Property'))
-        self.set('MembersRankGroups', ArrayProperty(child_type='ByteProperty'))
-        self.set('bSetGovernment', BoolProperty(value=False))
-        self.set('TribeAdmins', ArrayProperty(child_type='UInt32Property'))
+        self.set("TribeName", StrProperty())
+        self.set("OwnerPlayerDataID", UInt32Property())
+        self.set("TribeID", IntProperty(value=random_id))
+        self.set("MembersPlayerName", ArrayProperty(child_type="StrProperty"))
+        self.set("MembersPlayerDataID", ArrayProperty(child_type="UInt32Property"))
+        self.set("MembersRankGroups", ArrayProperty(child_type="ByteProperty"))
+        self.set("bSetGovernment", BoolProperty(value=False))
+        self.set("TribeAdmins", ArrayProperty(child_type="UInt32Property"))
         # ArrayProperty of TribeAlliance Structs
-        self.set('TribeAlliances', ArrayProperty(child_type='StructProperty'))
-        self.set('TribeGovernment', TribeGovernment())
+        self.set("TribeAlliances", ArrayProperty(child_type="StructProperty"))
+        self.set("TribeGovernment", TribeGovernment())
         # ArrayProperty of PrimalPlayerCharacterConfigStructs
-        self.set('MembersConfigs', ArrayProperty(child_type='StructProperty'))
-        self.set('TribeLog', ArrayProperty(child_type='StrProperty'))
-        self.set('LogIndex', IntProperty())
+        self.set("MembersConfigs", ArrayProperty(child_type="StructProperty"))
+        self.set("TribeLog", ArrayProperty(child_type="StrProperty"))
+        self.set("LogIndex", IntProperty())
 
         if stream is not None:
-            while stream.peek(stream.readNullTerminatedString) != 'None':
+            while stream.peek(stream.readNullTerminatedString) != "None":
                 self.load_and_set_next_property(stream)
             stream.readNullTerminatedString()
 
     def _exclude(self):
-        self.data['TribeGovernment']._exclude()
-        zero_log_index = self.data['LogIndex'].value == 0
-        empty_log = len(self.data['TribeLog'].value) == 0
+        self.data["TribeGovernment"]._exclude()
+        zero_log_index = self.data["LogIndex"].value == 0
+        empty_log = len(self.data["TribeLog"].value) == 0
         if zero_log_index or empty_log:
-            self.data['LogIndex'].included = False
+            self.data["LogIndex"].included = False
 
     def _write_to_stream(self, stream):
         self._exclude()
         self._calc_size()
         self._write_shared_struct_info(stream)
-        self.data['TribeName']._write_to_stream(stream)
-        self.data['OwnerPlayerDataID']._write_to_stream(stream)
-        self.data['TribeID']._write_to_stream(stream)
-        self.data['MembersPlayerName']._write_to_stream(stream)
-        self.data['MembersPlayerDataID']._write_to_stream(stream)
-        self.data['MembersRankGroups']._write_to_stream(stream)
-        self.data['bSetGovernment']._write_to_stream(stream)
-        self.data['TribeAdmins']._write_to_stream(stream)
-        self.data['TribeAlliances']._write_to_stream(stream)
-        self.data['TribeGovernment']._write_to_stream(stream)
-        self.data['MembersConfigs']._write_to_stream(stream)
-        self.data['TribeLog']._write_to_stream(stream)
-        self.data['LogIndex']._write_to_stream(stream)
-        stream.writeNullTerminatedString('None')
+        self.data["TribeName"]._write_to_stream(stream)
+        self.data["OwnerPlayerDataID"]._write_to_stream(stream)
+        self.data["TribeID"]._write_to_stream(stream)
+        self.data["MembersPlayerName"]._write_to_stream(stream)
+        self.data["MembersPlayerDataID"]._write_to_stream(stream)
+        self.data["MembersRankGroups"]._write_to_stream(stream)
+        self.data["bSetGovernment"]._write_to_stream(stream)
+        self.data["TribeAdmins"]._write_to_stream(stream)
+        self.data["TribeAlliances"]._write_to_stream(stream)
+        self.data["TribeGovernment"]._write_to_stream(stream)
+        self.data["MembersConfigs"]._write_to_stream(stream)
+        self.data["TribeLog"]._write_to_stream(stream)
+        self.data["LogIndex"]._write_to_stream(stream)
+        stream.writeNullTerminatedString("None")
 
 
 class TribeAlliance(BaseStruct):
-
     def __init__(self, stream=None):
         BaseStruct.__init__(self, stream)
-        self.set('AllianceName', StrProperty())
-        self.set('AllianceID', UInt32Property())
-        self.set('MembersTribeName', ArrayProperty(child_type='StrPropery'))
-        self.set('MembersTribeID', ArrayProperty(child_type='UInt32Property'))
-        self.set('AdminsTribeID', ArrayProperty(child_type='UInt32Property'))
+        self.set("AllianceName", StrProperty())
+        self.set("AllianceID", UInt32Property())
+        self.set("MembersTribeName", ArrayProperty(child_type="StrPropery"))
+        self.set("MembersTribeID", ArrayProperty(child_type="UInt32Property"))
+        self.set("AdminsTribeID", ArrayProperty(child_type="UInt32Property"))
 
 
 class TribeGovernment(BaseStruct):
-
     def __init__(self, stream=None):
         BaseStruct.__init__(self)
-        self.set('TribeGovern_PINCode', IntProperty())
-        self.set('TribeGovern_DinoOwnership', IntProperty())
-        self.set('TribeGovern_StructureOwnership', IntProperty())
-        self.set('TribeGovern_DinoUnclaimAdminOnly', IntProperty())
+        self.set("TribeGovern_PINCode", IntProperty())
+        self.set("TribeGovern_DinoOwnership", IntProperty())
+        self.set("TribeGovern_StructureOwnership", IntProperty())
+        self.set("TribeGovern_DinoUnclaimAdminOnly", IntProperty())
 
         if stream is not None:
-            while stream.peek(stream.readNullTerminatedString) != 'None':
+            while stream.peek(stream.readNullTerminatedString) != "None":
                 self.load_and_set_next_property(stream)
             stream.readNullTerminatedString()
 
@@ -957,31 +935,31 @@ class TribeGovernment(BaseStruct):
 
 
 PROPERTIES = {
-    'IntProperty': IntProperty,
-    'UIntProperty': UInt32Property,
-    'UInt32Property': UInt32Property,
-    'Int16Property': Int16Property,
-    'UInt16Property': UInt16Property,
-    'Int64Property': Int64Property,
-    'UInt64Property': UInt64Property,
-    'FloatProperty': FloatProperty,
-    'DoubleProperty': DoubleProperty,
-    'StrProperty': StrProperty,
-    'BoolProperty': BoolProperty,
-    'ArrayProperty': ArrayProperty,
-    'ByteProperty': ByteProperty,
-    'ObjectProperty': ObjectProperty,
+    "IntProperty": IntProperty,
+    "UIntProperty": UInt32Property,
+    "UInt32Property": UInt32Property,
+    "Int16Property": Int16Property,
+    "UInt16Property": UInt16Property,
+    "Int64Property": Int64Property,
+    "UInt64Property": UInt64Property,
+    "FloatProperty": FloatProperty,
+    "DoubleProperty": DoubleProperty,
+    "StrProperty": StrProperty,
+    "BoolProperty": BoolProperty,
+    "ArrayProperty": ArrayProperty,
+    "ByteProperty": ByteProperty,
+    "ObjectProperty": ObjectProperty,
 }
 
 # Long Variable PEP8 conformance
 ppcsstruct = PrimalPersistentCharacterStatsStruct
 
 STRUCTS = {
-    'PrimalPlayerDataStruct': PrimalPlayerDataStruct,
-    'UniqueNetIdRepl': UniqueNetIdRepl,
-    'PrimalPlayerCharacterConfigStruct': PrimalPlayerCharacterConfigStruct,
-    'LinearColor': LinearColor,
-    'TribeData': TribeData,
-    'TribeGovernment': TribeGovernment,
-    'PrimalPersistentCharacterStatsStruct': ppcsstruct
+    "PrimalPlayerDataStruct": PrimalPlayerDataStruct,
+    "UniqueNetIdRepl": UniqueNetIdRepl,
+    "PrimalPlayerCharacterConfigStruct": PrimalPlayerCharacterConfigStruct,
+    "LinearColor": LinearColor,
+    "TribeData": TribeData,
+    "TribeGovernment": TribeGovernment,
+    "PrimalPersistentCharacterStatsStruct": ppcsstruct,
 }

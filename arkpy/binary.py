@@ -5,13 +5,12 @@ stackoverflow.com/questions/442188/readint-readbyte-readstring-etc-in-python/
 Using Little-Endian as that's what the ark files appear to use.
 """
 
-import utils
+from struct import pack, unpack
 
-from struct import *
+import utils
 
 
 class BinaryStream:
-
     def __init__(self, base_stream):
         self.base_stream = base_stream
 
@@ -22,45 +21,45 @@ class BinaryStream:
         return self.base_stream.read(length)
 
     def readChar(self):
-        return self.unpack('<b')
+        return self.unpack("<b")
 
     def readUChar(self):
-        return self.unpack('<B')
+        return self.unpack("<B")
 
     def readBool(self):
-        return self.unpack('<?')
+        return self.unpack("<?")
 
     def readInt16(self):
-        return self.unpack('<h', 2)
+        return self.unpack("<h", 2)
 
     def readUInt16(self):
-        return self.unpack('<H', 2)
+        return self.unpack("<H", 2)
 
     def readInt32(self):
-        return self.unpack('<i', 4)
+        return self.unpack("<i", 4)
 
     def readUInt32(self):
-        return self.unpack('<I', 4)
+        return self.unpack("<I", 4)
 
     def readInt64(self):
-        return self.unpack('<q', 8)
+        return self.unpack("<q", 8)
 
     def readUInt64(self):
-        return self.unpack('<Q', 8)
+        return self.unpack("<Q", 8)
 
     def readFloat(self):
-        return self.unpack('<f', 4)
+        return self.unpack("<f", 4)
 
     def readDouble(self):
-        return self.unpack('<d', 8)
+        return self.unpack("<d", 8)
 
     def readString(self):
         length = self.readUInt32()
-        return self.unpack(str(length) + 's', length)
+        return self.unpack(str(length) + "s", length)
 
     def readNullTerminatedString(self):
         length = self.readUInt32()
-        s = self.unpack(str(length - 1) + 's', length - 1)
+        s = self.unpack(str(length - 1) + "s", length - 1)
         self.readByte()
         return s
 
@@ -79,8 +78,8 @@ class BinaryStream:
         return (name, typeof)
 
     def readNBytesAsBits(self, nbytes):
-        bits = ''
-        for i in xrange(nbytes):
+        bits = ""
+        for i in range(nbytes):
             byte = self.readChar()
             byte_as_bits = utils.bits(byte, 8)
             bits += byte_as_bits
@@ -105,51 +104,51 @@ class BinaryStream:
         self.base_stream.write(value)
 
     def writeBytesWith(self, length, value):
-        for i in xrange(length):
+        for i in range(length):
             self.writeChar(value)
 
     def writeChar(self, value):
-        self.pack('<b', value)
+        self.pack("<b", value)
 
     def writeUChar(self, value):
-        self.pack('<B', value)
+        self.pack("<B", value)
 
     def writeBool(self, value):
-        self.pack('<?', value)
+        self.pack("<?", value)
 
     def writeInt16(self, value):
-        self.pack('<h', value)
+        self.pack("<h", value)
 
     def writeUInt16(self, value):
-        self.pack('<H', value)
+        self.pack("<H", value)
 
     def writeInt32(self, value):
-        self.pack('<i', value)
+        self.pack("<i", value)
 
     def writeUInt32(self, value):
-        self.pack('<I', value)
+        self.pack("<I", value)
 
     def writeInt64(self, value):
-        self.pack('<q', value)
+        self.pack("<q", value)
 
     def writeUInt64(self, value):
-        self.pack('<Q', value)
+        self.pack("<Q", value)
 
     def writeFloat(self, value):
-        self.pack('<f', value)
+        self.pack("<f", value)
 
     def writeDouble(self, value):
-        self.pack('<d', value)
+        self.pack("<d", value)
 
     def writeString(self, value):
         length = len(value)
         self.writeUInt32(length)
-        self.pack(str(length) + 's', value)
+        self.pack(str(length) + "s", value)
 
     def writeNullTerminatedString(self, value):
         length = len(value)
         self.writeUInt32(length + 1)
-        self.pack(str(length) + 's', value)
+        self.pack(str(length) + "s", value)
         self.writeChar(0)
 
     def writeVec3F(self, vec):
@@ -198,18 +197,17 @@ class BinaryStream:
 
 
 class BitPacker:
-
     """
     Convenience for packing bits that can later be writen as bytes
     """
 
     def __init__(self):
-        self.bits = ''
+        self.bits = ""
 
     def pack(self, value, bits):
         self.bits += utils.bits(value, bits)
 
-    def get_bytes(n):
+    def get_bytes(self):
         return [int(bs, 2) for bs in utils.split_every_nchars(self.bits, 8)]
 
     def write(self, stream):

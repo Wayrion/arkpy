@@ -1,9 +1,8 @@
 import json
 import random
-
-from arkpy import utils
 from enum import Enum, IntEnum
 
+from arkpy import utils
 
 # Documentation paragraph for Entities Enums/Maps
 docs_msg = """
@@ -37,62 +36,63 @@ for trophy in entities.Trophy:
 
 def main():
     items = None
-    with open('data/entity_ids_items.json', 'r') as ifile:
+    with open("data/entity_ids_items.json", "r") as ifile:
         items = json.load(ifile)
-        items = items['items']
+        items = items["items"]
     categories = {}
     for item in items:
-        cat = item.get('category', 'Other')
-        if cat == 'Weapon':
-            cat = 'Weapons'
+        cat = item.get("category", "Other")
+        if cat == "Weapon":
+            cat = "Weapons"
         if cat not in categories:
             categories[cat] = []
-        name = item.get('name', '')
-        name = name.replace(' ', '_')
-        name = name.replace(':', '_')
-        name = name.replace('-', '_')
-        name = name.replace('\'', '')
-        name = name.replace('(', '')
-        name = name.replace(')', '')
-        path = item.get('path', '')
+        name = item.get("name", "")
+        name = name.replace(" ", "_")
+        name = name.replace(":", "_")
+        name = name.replace("-", "_")
+        name = name.replace("'", "")
+        name = name.replace("(", "")
+        name = name.replace(")", "")
+        path = item.get("path", "")
         if '"' not in path:
             path = '""'
         else:
-            path = path.replace('Blueprint', 'BlueprintGeneratedClass ', 1)
-            path = path.replace('\'', '')
+            path = path.replace("Blueprint", "BlueprintGeneratedClass ", 1)
+            path = path.replace("'", "")
         val = (name, path)
         categories[cat].append(val)
-    with open('arkpy/entities.py', 'w') as ofile:
-        ofile.write('from enum import Enum\n\n')
+    with open("arkpy/entities.py", "w") as ofile:
+        ofile.write("from enum import Enum\n\n")
         for key in categories.keys():
-            ofile.write('class %s(Enum):\n' % key)
+            ofile.write("class %s(Enum):\n" % key)
             for item in categories[key]:
                 # print item
-                line = '    %s = %s\n' % item
+                line = "    %s = %s\n" % item
                 ofile.write(line)
-            ofile.write('\n\n')
-        ofile.write('\n')
-    with open('docs/entities.md', 'w') as ofile:
-        ofile.write('# Entities Enums/Maps\n\n')
+            ofile.write("\n\n")
+        ofile.write("\n")
+    with open("docs/entities.md", "w") as ofile:
+        ofile.write("# Entities Enums/Maps\n\n")
         ofile.write(docs_msg)
-        ofile.write('- - -\n\n')
-        ofile.write('# Items\n\n')
-        ofile.write('- - -\n\n')
+        ofile.write("- - -\n\n")
+        ofile.write("# Items\n\n")
+        ofile.write("- - -\n\n")
         for key in categories.keys():
-            prefix = categories[key][0][1].split('/')[:-1]
-            prefix = '/'.join(prefix)
+            prefix = categories[key][0][1].split("/")[:-1]
+            prefix = "/".join(prefix)
             l = len(prefix)
 
-            ofile.write('## `%s` Class\n\n' % key)
-            ofile.write('### extends `enum.Enum`\n\n')
-            ofile.write('**Path prefix:** `%s`\n\n' % prefix)
+            ofile.write("## `%s` Class\n\n" % key)
+            ofile.write("### extends `enum.Enum`\n\n")
+            ofile.write("**Path prefix:** `%s`\n\n" % prefix)
 
-            ofile.write('| Name | Path (Value) |\n')
-            ofile.write('|------|--------------|\n')
+            ofile.write("| Name | Path (Value) |\n")
+            ofile.write("|------|--------------|\n")
             for item in categories[key]:
                 path = item[1][l:]
-                ofile.write('| **%s** | %s |\n' % (item[0], path))
-            ofile.write('\n\n')
+                ofile.write("| **%s** | %s |\n" % (item[0], path))
+            ofile.write("\n\n")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

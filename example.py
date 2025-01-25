@@ -1,4 +1,4 @@
-import random
+"""import random
 
 from arkpy import arktypes
 from arkpy.ark import ArkCharacterSetting, ArkProfile, ArkTribe
@@ -147,3 +147,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+"""
