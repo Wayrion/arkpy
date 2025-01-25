@@ -15,7 +15,7 @@ import random
 import struct
 
 import utils
-from binary import BinaryStream
+from .binary import BinaryStream
 
 # debug = True
 debug = False

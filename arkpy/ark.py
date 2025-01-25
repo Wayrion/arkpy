@@ -7,7 +7,7 @@ import random
 import warnings
 from enum import IntEnum
 
-import arktypes
+from .arktypes import load_struct, PrimalPlayerDataStruct, TribeData
 import utils
 from binary import BinaryStream
 
@@ -322,7 +322,7 @@ class ArkProfile:
                     # print var_name, var_type
                     if var_type == "StructProperty":
                         # print 'Struct Property found'
-                        struct = arktypes.load_struct(stream)
+                        struct = load_struct(stream)
                         # print struct.size
                         struct.var_name = var_name
 
@@ -332,7 +332,7 @@ class ArkProfile:
                     # Only a null-terminated "None" + 4 NULL bytes remaining
                 else:
                     raise WrongFileType("PlayerLocalData.arkprofile files unsupported")
-        self.myData = self.data.get("MyData", arktypes.PrimalPlayerDataStruct())
+        self.myData = self.data.get("MyData", PrimalPlayerDataStruct())
         statsstruct = self.myData.get("MyPersistentCharacterStats")
         configstruct = self.myData.get("MyPlayerCharacterConfig")
         self.character = Character(stats=statsstruct, config=configstruct)
@@ -407,7 +407,7 @@ class ArkTribe:
         self.version = 1
         if file_path is not None:
             self._load_from_stream(file_path)
-        self.container = self.data.get("TribeData", arktypes.TribeData())
+        self.container = self.data.get("TribeData", TribeData())
 
     def _load_from_stream(self, file_path):
         with open(file_path, "rb") as ifile:
@@ -425,7 +425,7 @@ class ArkTribe:
             var_name, var_type = stream.read_pair()
             print(var_name)
             print(var_type)
-            struct = arktypes.load_struct(stream)
+            struct = load_struct(stream)
             struct.var_name = var_name
             self.data[var_name] = struct
 
