@@ -14,8 +14,8 @@ import json
 import random
 import struct
 
-import utils
 from .binary import BinaryStream
+from .utils import _gen_player_id, _gen_tribe_id, list_set
 
 # debug = True
 debug = False
@@ -122,12 +122,12 @@ class BaseStruct:
             self.data[name] = value
         else:
             if isinstance(field, list):
-                utils.list_set(field, value.index, value)
+                list_set(field, value.index, value)
             elif value.index > 0:
                 prev_value = field
                 self.data[name] = []
-                utils.list_set(self.data[name], prev_value.index, prev_value)
-                utils.list_set(self.data[name], value.index, value)
+                list_set(self.data[name], prev_value.index, prev_value)
+                list_set(self.data[name], value.index, value)
             else:
                 if field.__class__.__name__ == "ArrayProperty":
                     # TODO: Would like to merge arrays of structs with default
@@ -623,7 +623,7 @@ class PrimalPlayerDataStruct(BaseStruct):
         self.var_name = "MyData"
 
         # Default Values
-        random_id = utils._gen_player_id()
+        random_id = _gen_player_id()
         self.set("PlayerDataID", UInt64Property(value=random_id))
         self.set("UniqueID", UniqueNetIdRepl())
         self.set("SavedNetworkAddress", StrProperty())
@@ -853,7 +853,7 @@ class TribeData(BaseStruct):
         BaseStruct.__init__(self)
         self.var_name = "TribeData"
 
-        random_id = utils._gen_tribe_id()
+        random_id = _gen_tribe_id()
         self.set("TribeName", StrProperty())
         self.set("OwnerPlayerDataID", UInt32Property())
         self.set("TribeID", IntProperty(value=random_id))

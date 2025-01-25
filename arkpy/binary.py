@@ -7,7 +7,7 @@ Using Little-Endian as that's what the ark files appear to use.
 
 from struct import pack, unpack
 
-import utils
+from .utils import bits, split_every_nchars
 
 
 class BinaryStream:
@@ -81,7 +81,7 @@ class BinaryStream:
         bits = ""
         for i in range(nbytes):
             byte = self.readChar()
-            byte_as_bits = utils.bits(byte, 8)
+            byte_as_bits = bits(byte, 8)
             bits += byte_as_bits
         return bits
 
@@ -205,12 +205,12 @@ class BitPacker:
         self.bits = ""
 
     def pack(self, value, bits):
-        self.bits += utils.bits(value, bits)
+        self.bits += bits(value, bits)
 
     def get_bytes(self):
-        return [int(bs, 2) for bs in utils.split_every_nchars(self.bits, 8)]
+        return [int(bs, 2) for bs in split_every_nchars(self.bits, 8)]
 
     def write(self, stream):
-        for bit_string in utils.split_every_nchars(self.bits, 8):
+        for bit_string in split_every_nchars(self.bits, 8):
             byte = int(bit_string, 2)
             stream.writeUChar(byte)

@@ -14,7 +14,7 @@ requires = ["enum34>=1.1.6"]
 
 setup(
     name="arkgamepy",
-    version="0.1.5",
+    version="0.1.6",
     description="A library for reading and writing the file formats of ARK: Survival Evolved",
     long_description=long_description,
     packages=["arkpy"],

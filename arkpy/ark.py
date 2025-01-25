@@ -7,9 +7,9 @@ import random
 import warnings
 from enum import IntEnum
 
-from .arktypes import load_struct, PrimalPlayerDataStruct, TribeData
-import utils
-from binary import BinaryStream
+from .arktypes import PrimalPlayerDataStruct, TribeData, load_struct
+from .binary import BinaryStream
+from .utils import get_file_name
 
 
 class WrongFileType(Exception):
@@ -184,7 +184,7 @@ class ArkCharacterSetting:
     @classmethod
     def from_file(cls, file_path):
         preset = cls()
-        preset.name = utils.get_file_name(file_path)
+        preset.name = get_file_name(file_path)
         with open(file_path, "rb") as ifile:
             stream = BinaryStream(ifile)
             preset.header["strings"] = []
