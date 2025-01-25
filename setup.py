@@ -14,7 +14,7 @@ requires = ["enum34>=1.1.6"]
 
 setup(
     name="arkgamepy",
-    version="0.1.3",
+    version="0.1.4",
     description="A library for reading and writing the file formats of ARK: Survival Evolved",
     long_description=long_description,
     packages=["arkpy"],
@@ -38,9 +38,9 @@ setup(
         "License :: OSI Approved :: MIT License",
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        # 'Programming Language :: Python :: 2',
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.9",
+        # "Programming Language :: Python :: 2.7",
         # 'Programming Language :: Python :: 3',
         # 'Programming Language :: Python :: 3.2',
         # 'Programming Language :: Python :: 3.3',
