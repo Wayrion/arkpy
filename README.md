@@ -1,3 +1,5 @@
+This project is archived as I was unable to figure out a patch that would make this project work with newer versions of ark files. Sorry!
+
 ARKpy
 ====
 
